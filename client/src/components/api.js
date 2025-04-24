@@ -28,12 +28,20 @@ const fetchWithAuth = (url, options = {}) => {
     });
 };
 
-export const login = (username, password) => {
-    return fetchWithAuth(`${API_URL}/auth/login`, {
-        method: 'POST',
-        body: JSON.stringify({ username, password })
+export const login = async (username, password) => {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
     });
-};
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Login failed');
+    }
+    return data;
+  };
 
 export const getPrograms = () => {
     return fetchWithAuth(`${API_URL}/programs`);
@@ -49,6 +57,10 @@ export const createProgram = (programData) => {
 export const getClients = (query = '') => {
     return fetchWithAuth(`${API_URL}/clients?q=${query}`);
 };
+
+export const searchClients = async (searchTerm) => {
+    return fetchWithAuth(`${API_URL}/clients?q=${searchTerm}`);
+  };
 
 export const createClient = (clientData) => {
     return fetchWithAuth(`${API_URL}/clients`, {

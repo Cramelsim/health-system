@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createClient } from '../services/api';
+import { createClient } from '../components/api';
 import { useNavigate } from 'react-router-dom';
 
 function RegisterClient() {

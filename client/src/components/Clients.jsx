@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getClients, searchClients } from '../services/api';
+import { getClients, searchClients } from '../components/api';
 
 function Clients() {
   const [clients, setClients] = useState([]);

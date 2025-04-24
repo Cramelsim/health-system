@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getPrograms, createProgram } from '../services/api';
+import { getPrograms, createProgram } from '../components/api';
 
 function HealthPrograms() {
   const [programs, setPrograms] = useState([]);
