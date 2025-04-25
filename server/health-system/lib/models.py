@@ -24,3 +24,13 @@ class User(db.Model):
             'username': self.username,
             'role': self.role
         })
+    
+class HealthProgram(db.Model):
+    __tablename__ = 'health_programs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    
+    clients = db.relationship('Client', secondary='client_programs', back_populates='programs')
+
