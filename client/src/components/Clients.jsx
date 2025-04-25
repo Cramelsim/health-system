@@ -51,6 +51,27 @@ function Clients() {
   if (loading) return <div className="loading">Loading clients...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchClients(searchTerm)
+          .then(data => {
+            setClients(data);
+            setError('');
+          })
+          .catch(err => {
+            setError(err.message);
+            // Fallback to showing all clients if search fails
+            fetchClients(); 
+          });
+      } else {
+        fetchClients();
+      }
+    }, 500);
+  
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchClients]);
+  
   return (
     <div className="clients-container">
       <div className="clients-header">

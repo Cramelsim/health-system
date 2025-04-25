@@ -73,10 +73,26 @@ export const getClients = async () => {
   };
 
 
-export const searchClients = async (searchTerm) => {
-    return getClients(searchTerm); // Reuse getClients with search term
-};
-
+  export const searchClients = async (searchTerm) => {
+    try {
+      const response = await fetch(`${API_URL}/clients/search?q=${encodeURIComponent(searchTerm)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Search failed');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error('Search error:', error);
+      throw error;
+    }
+  };
 
 export const getClientDetails = async (clientId) => {
     return fetchWithAuth(`/clients/${clientId}`);
@@ -118,9 +134,6 @@ export const getPrograms = async () => {
     return fetchWithAuth('/programs');
 };
 
-// Enrollment Operations
-// api.js
-// api.js
 export const enrollClient = async (enrollmentData) => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -132,7 +145,7 @@ export const enrollClient = async (enrollmentData) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`  // Ensure this matches exactly
+          'Authorization': `Bearer ${token}`  
         },
         body: JSON.stringify(enrollmentData)
       });
@@ -155,3 +168,4 @@ export const registerDoctor = async (doctorData) => {
         body: JSON.stringify(doctorData)
     });
 };
+
