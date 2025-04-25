@@ -21,3 +21,17 @@ class LoginResource(Resource):
             return {'message': 'Invalid credentials'}, 401
             
         return {'access_token': user.get_token()}, 200
+    
+class UserResource(AuthResource):
+    @jwt_required()
+    def get(self, user_id):
+        current_user = self.get_current_user()
+        if not current_user or (current_user.id != user_id and current_user.role != 'admin'):
+            return {'message': 'Unauthorized'}, 403
+            
+        user = User.query.get_or_404(user_id)
+        return {
+            'id': user.id,
+            'username': user.username,
+            'role': user.role
+        }
