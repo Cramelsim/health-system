@@ -181,13 +181,8 @@ class EnrollmentResource(AuthResource):
             db.session.rollback()
             return {'message': 'Client already enrolled in this program'}, 400
         
-class DoctorRegistrationResource(AuthResource):
-    @jwt_required()
+class DoctorSelfRegistrationResource(Resource):
     def post(self):
-        current_user = self.get_current_user()
-        if not current_user or current_user.role != 'admin':
-            return {'message': 'Unauthorized - Admin only'}, 403
-            
         data = request.get_json()
         
         # Validate required fields
@@ -201,7 +196,11 @@ class DoctorRegistrationResource(AuthResource):
         # Create new doctor user
         doctor = User(
             username=data['username'],
-            role='doctor'
+            role='doctor',
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            email=data.get('email', ''),
+            license_number=data.get('license_number', '')
         )
         doctor.set_password(data['password'])
         
@@ -209,7 +208,7 @@ class DoctorRegistrationResource(AuthResource):
         db.session.commit()
         
         return {
-            'message': 'Doctor registered successfully',
+            'message': 'Doctor registration successful. Account pending approval.',
             'id': doctor.id,
             'username': doctor.username
         }, 201

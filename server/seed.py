@@ -20,7 +20,11 @@ def seed_database():
         doctor1.set_password('doctor123')
         doctor2 = User(username='dr_jones', role='doctor')
         doctor2.set_password('doctor123')
-        db.session.add_all([doctor1, doctor2])
+        doctor3 = User(username='dr_williams', role='doctor')
+        doctor3.set_password('doctor123')
+        doctor4 = User(username='dr_brown', role='doctor')
+        doctor4.set_password('doctor123')
+        db.session.add_all([doctor1, doctor2, doctor3, doctor4])
 
         print("Seeding health programs...")
         programs = [
