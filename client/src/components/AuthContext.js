@@ -10,14 +10,18 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (token) {
-            // Verify the token here
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            setUser({
-                id: payload.identity.id,
-                username: payload.identity.username,
-                role: payload.identity.role
-            });
-            setAccessToken(token);
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUser({
+                    id: payload.identity.id,
+                    username: payload.identity.username,
+                    role: payload.identity.role
+                });
+                setAccessToken(token);
+            } catch (error) {
+                console.error('Token validation failed:', error);
+                localStorage.removeItem('accessToken');
+            }
         }
         setLoading(false);
     }, []);
@@ -47,7 +51,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            loading, 
+            login, 
+            logout,
+            isAuthenticated: !!user
+        }}>
             {children}
         </AuthContext.Provider>
     );

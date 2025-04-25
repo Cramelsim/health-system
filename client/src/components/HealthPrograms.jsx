@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 import { getPrograms, createProgram } from '../components/api';
 
 function HealthPrograms() {
@@ -11,6 +12,7 @@ function HealthPrograms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchPrograms = async () => {
@@ -18,7 +20,6 @@ function HealthPrograms() {
         const data = await getPrograms();
         setPrograms(data);
         setLoading(false);
-        
       } catch (err) {
         setError('Failed to fetch programs');
         setLoading(false);
@@ -42,7 +43,6 @@ function HealthPrograms() {
       setError('');
       setNewProgram({ name: '', description: '' });
       
-      // Refresh programs list
       const data = await getPrograms();
       setPrograms(data);
     } catch (err) {
@@ -63,6 +63,14 @@ function HealthPrograms() {
       <div className="programs-content">
         <div className="programs-list">
           <h3>Available Programs</h3>
+          {!user && (
+            <div className="login-prompt">
+              <p>Login to view program details and enrollment information.</p>
+              <Link to="/login" className="btn-primary">
+                Login
+              </Link>
+            </div>
+          )}
           {programs.length === 0 ? (
             <p>No programs available</p>
           ) : (
@@ -71,10 +79,12 @@ function HealthPrograms() {
                 <li key={program.id}>
                   <div className="program-item">
                     <h4>{program.name}</h4>
-                    <p>{program.description}</p>
-                    <Link to={`/clients?program=${program.id}`} className="btn-view">
-                      View Enrolled Clients
-                    </Link>
+                    {user && <p>{program.description}</p>}
+                    {user && (
+                      <Link to={`/clients?program=${program.id}`} className="btn-view">
+                        View Enrolled Clients
+                      </Link>
+                    )}
                   </div>
                 </li>
               ))}
@@ -82,37 +92,39 @@ function HealthPrograms() {
           )}
         </div>
         
-        <div className="create-program">
-          <h3>Create New Program</h3>
-          {success && <div className="success-message">{success}</div>}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Program Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={newProgram.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+        {user && (
+          <div className="create-program">
+            <h3>Create New Program</h3>
+            {success && <div className="success-message">{success}</div>}
             
-            <div className="form-group">
-              <label>Description:</label>
-              <textarea
-                name="description"
-                value={newProgram.description}
-                onChange={handleInputChange}
-                rows={3}
-              />
-            </div>
-            
-            <button type="submit" className="btn-primary">
-              Create Program
-            </button>
-          </form>
-        </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Program Name:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newProgram.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Description:</label>
+                <textarea
+                  name="description"
+                  value={newProgram.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                />
+              </div>
+              
+              <button type="submit" className="btn-primary">
+                Create Program
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

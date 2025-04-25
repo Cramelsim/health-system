@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
 import { getClients, searchClients } from '../components/api';
 
 function Clients() {
@@ -8,6 +9,7 @@ function Clients() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -50,9 +52,11 @@ function Clients() {
     <div className="clients-container">
       <div className="clients-header">
         <h2>Client Management</h2>
-        <Link to="/clients/register" className="btn-primary">
-          Register New Client
-        </Link>
+        {user && (
+          <Link to="/clients/register" className="btn-primary">
+            Register New Client
+          </Link>
+        )}
       </div>
       
       <div className="search-bar">
@@ -63,6 +67,15 @@ function Clients() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
+      {!user && (
+        <div className="login-prompt">
+          <p>Please login to view full client details and management options.</p>
+          <Link to="/login" className="btn-primary">
+            Login
+          </Link>
+        </div>
+      )}
       
       <div className="clients-list">
         {clients.length === 0 ? (
@@ -74,8 +87,8 @@ function Clients() {
                 <th>ID</th>
                 <th>Name</th>
                 <th>Contact</th>
-                <th>Date of Birth</th>
-                <th>Actions</th>
+                {user && <th>Date of Birth</th>}
+                {user && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -84,15 +97,17 @@ function Clients() {
                   <td>{client.id}</td>
                   <td>{client.first_name} {client.last_name}</td>
                   <td>{client.contact_number || 'N/A'}</td>
-                  <td>{client.date_of_birth || 'N/A'}</td>
-                  <td className="actions">
-                    <button 
-                      onClick={() => navigate(`/clients/${client.id}`)}
-                      className="btn-view"
-                    >
-                      View Profile
-                    </button>
-                  </td>
+                  {user && <td>{client.date_of_birth || 'N/A'}</td>}
+                  {user && (
+                    <td className="actions">
+                      <button 
+                        onClick={() => navigate(`/clients/${client.id}`)}
+                        className="btn-view"
+                      >
+                        View Profile
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

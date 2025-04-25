@@ -44,7 +44,7 @@ function Home() {
   const startCountingAnimation = () => {
     // Provider count animation (0 to 500)
     const providerDuration = 2000; // 2 seconds
-    const providerIncrement = 500 / (providerDuration / 16);
+    const providerIncrement = 1000 / (providerDuration / 16);
     let providerCurrent = 0;
     
     const providerInterval = setInterval(() => {
@@ -59,7 +59,7 @@ function Home() {
 
     // Patient count animation (0 to 10,000)
     const patientDuration = 2500; // 2.5 seconds
-    const patientIncrement = 10000 / (patientDuration / 16);
+    const patientIncrement = 15000 / (patientDuration / 16);
     let patientCurrent = 0;
     
     const patientInterval = setInterval(() => {

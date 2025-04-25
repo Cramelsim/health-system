@@ -6,6 +6,7 @@ import Clients from './components/Clients';
 import ClientProfile from './components/ClientProfile';
 import RegisterClient from './components/RegisterClient';
 import HealthPrograms from './components/HealthPrograms';
+import ProtectedRoute from './components/ProtectedRoutes';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import DoctorRegister from './components/DoctorRegister';
@@ -26,6 +27,21 @@ function App() {
               <Route path="/clients/:clientId" element={<ClientProfile />} />
               <Route path="/programs" element={<HealthPrograms />} />
               <Route path="/register/doctor" element={<DoctorRegister />} />
+                 {/* Public routes */}
+          <Route path="/clients" element={<Clients showPublicView={true} />} />
+          <Route path="/programs" element={<HealthPrograms showPublicView={true} />} />
+          
+          {/* Protected routes */}
+          <Route path="/clients/manage" element={
+            <ProtectedRoute>
+              <Clients />
+            </ProtectedRoute>
+          } />
+          <Route path="/clients/:id" element={
+            <ProtectedRoute>
+              <ClientProfile />
+            </ProtectedRoute>
+          } />
             </Routes>
           </main>
         </div>

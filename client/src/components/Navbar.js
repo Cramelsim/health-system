@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
+
 function Navbar() {
   const { user, logout } = useAuth();
 
@@ -12,17 +13,20 @@ function Navbar() {
       </div>
       
       <div className="navbar-links">
+        <Link to="/clients" className="nav-link">
+          Clients
+        </Link>
+        <Link to="/programs" className="nav-link">
+          Programs
+        </Link>
+        
         {user ? (
           <>
-            <Link to="/register/doctor" className="nav-link">
-               Doctor Registration
-           </Link>
-            <Link to="/clients" className="nav-link">
-              Clients
-            </Link>
-            <Link to="/programs" className="nav-link">
-              Programs
-            </Link>
+            {user.role === 'admin' && (
+              <Link to="/register/doctor" className="nav-link">
+                Doctor Registration
+              </Link>
+            )}
             <button onClick={logout} className="btn-logout">
               Logout
             </button>
@@ -38,6 +42,3 @@ function Navbar() {
 }
 
 export default Navbar;
-
-
-
