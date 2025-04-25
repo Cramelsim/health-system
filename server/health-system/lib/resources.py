@@ -180,3 +180,36 @@ class EnrollmentResource(AuthResource):
         except:
             db.session.rollback()
             return {'message': 'Client already enrolled in this program'}, 400
+        
+class DoctorRegistrationResource(AuthResource):
+    @jwt_required()
+    def post(self):
+        current_user = self.get_current_user()
+        if not current_user or current_user.role != 'admin':
+            return {'message': 'Unauthorized - Admin only'}, 403
+            
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data.get('username') or not data.get('password'):
+            return {'message': 'Username and password are required'}, 400
+            
+        # Check if username exists
+        if User.query.filter_by(username=data['username']).first():
+            return {'message': 'Username already exists'}, 400
+            
+        # Create new doctor user
+        doctor = User(
+            username=data['username'],
+            role='doctor'
+        )
+        doctor.set_password(data['password'])
+        
+        db.session.add(doctor)
+        db.session.commit()
+        
+        return {
+            'message': 'Doctor registered successfully',
+            'id': doctor.id,
+            'username': doctor.username
+        }, 201
