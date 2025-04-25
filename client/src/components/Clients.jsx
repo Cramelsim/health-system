@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import { getClients, searchClients } from '../components/api';
+import ClientEnrollmentView from '../components/EnrollmentView';
 
 function Clients() {
   const [clients, setClients] = useState([]);
@@ -9,41 +10,43 @@ function Clients() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const fetchClients = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getClients();
+      setClients(data);
+    } catch (err) {
+      if (err.message.includes('401')) {
+        logout();
+        navigate('/login');
+      } else {
+        setError(err.message || 'Failed to fetch clients');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [logout, navigate]);
 
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const data = await getClients();
-        setClients(data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch clients');
-        setLoading(false);
-      }
-    };
     fetchClients();
-  }, []);
+  }, [fetchClients]);
 
   useEffect(() => {
-    const search = async () => {
-      if (searchTerm.trim() === '') return;
-      try {
-        const data = await searchClients(searchTerm);
-        setClients(data);
-      } catch (err) {
-        setError('Search failed');
-      }
-    };
-    
     const timer = setTimeout(() => {
-      if (searchTerm.trim() !== '') {
-        search();
+      if (searchTerm.trim()) {
+        searchClients(searchTerm)
+          .then(data => setClients(data))
+          .catch(err => setError(err.message || 'Search failed'));
+      } else {
+        fetchClients();
       }
     }, 500);
-    
+
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, fetchClients]);
 
   if (loading) return <div className="loading">Loading clients...</div>;
   if (error) return <div className="error-message">{error}</div>;
@@ -68,15 +71,6 @@ function Clients() {
         />
       </div>
 
-      {!user && (
-        <div className="login-prompt">
-          <p>Please login to view full client details and management options.</p>
-          <Link to="/login" className="btn-primary">
-            Login
-          </Link>
-        </div>
-      )}
-      
       <div className="clients-list">
         {clients.length === 0 ? (
           <div className="no-results">No clients found</div>
@@ -114,6 +108,13 @@ function Clients() {
           </table>
         )}
       </div>
+
+      {user && (
+        <div className="enrollment-section">
+          <h3>Program Enrollment</h3>
+          <ClientEnrollmentView />
+        </div>
+      )}
     </div>
   );
 }
