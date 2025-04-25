@@ -7,7 +7,7 @@ from resources import (
     LoginResource, UserResource,
     ProgramListResource, ProgramResource,
     ClientListResource, ClientResource,
-    EnrollmentResource , DoctorRegistrationResource
+    EnrollmentResource , DoctorSelfRegistrationResource
 )
 from config import Config
 
@@ -40,7 +40,7 @@ api.add_resource(ProgramResource, '/api/programs/<int:program_id>')
 api.add_resource(ClientListResource, '/api/clients')
 api.add_resource(ClientResource, '/api/clients/<int:client_id>')
 api.add_resource(EnrollmentResource, '/api/enrollments')
-api.add_resource(DoctorRegistrationResource, '/api/doctors/register')
+api.add_resource(DoctorSelfRegistrationResource, '/api/auth/register/doctor')
 
 
 if __name__ == '__main__':
