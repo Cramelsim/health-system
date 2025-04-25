@@ -46,3 +46,16 @@ class Client(db.Model):
     address = db.Column(db.Text)
     
     programs = db.relationship('HealthProgram', secondary='client_programs', back_populates='clients')
+
+class ClientProgram(db.Model):
+    __tablename__ = 'client_programs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    program_id = db.Column(db.Integer, db.ForeignKey('health_programs.id'), nullable=False)
+    enrollment_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default='Active')
+    
+    __table_args__ = (
+        db.UniqueConstraint('client_id', 'program_id', name='unique_client_program'),
+    )
