@@ -35,3 +35,41 @@ class UserResource(AuthResource):
             'username': user.username,
             'role': user.role
         }
+    
+class ProgramResource(Resource):
+    @jwt_required()
+    def get(self, program_id):
+        program = HealthProgram.query.get_or_404(program_id)
+        return {
+            'id': program.id,
+            'name': program.name,
+            'description': program.description,
+            'clients': [{
+                'id': c.id,
+                'name': f"{c.first_name} {c.last_name}"
+            } for c in program.clients]
+        }
+    
+    @jwt_required()
+    def put(self, program_id):
+        current_user = self.get_current_user()
+        if not current_user:
+            return {'message': 'Unauthorized'}, 401
+            
+        program = HealthProgram.query.get_or_404(program_id)
+        data = request.get_json()
+        program.name = data.get('name', program.name)
+        program.description = data.get('description', program.description)
+        db.session.commit()
+        return {'message': 'Program updated'}, 200
+    
+    @jwt_required()
+    def delete(self, program_id):
+        current_user = self.get_current_user()
+        if not current_user or current_user.role != 'admin':
+            return {'message': 'Unauthorized'}, 403
+            
+        program = HealthProgram.query.get_or_404(program_id)
+        db.session.delete(program)
+        db.session.commit()
+        return {'message': 'Program deleted'}, 200
