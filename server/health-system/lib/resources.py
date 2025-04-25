@@ -159,3 +159,24 @@ class ClientResource(AuthResource):
         db.session.commit()
         return {'message': 'Client deleted'}, 200
     
+class EnrollmentResource(AuthResource):
+    @jwt_required()
+    def post(self):
+        current_user = self.get_current_user()
+        if not current_user:
+            return {'message': 'Unauthorized'}, 401
+            
+        data = request.get_json()
+        enrollment = ClientProgram(
+            client_id=data['client_id'],
+            program_id=data['program_id'],
+            enrollment_date=data.get('enrollment_date'),
+            status=data.get('status', 'Active')
+        )
+        db.session.add(enrollment)
+        try:
+            db.session.commit()
+            return {'message': 'Enrollment successful'}, 201
+        except:
+            db.session.rollback()
+            return {'message': 'Client already enrolled in this program'}, 400
