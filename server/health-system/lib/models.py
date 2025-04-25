@@ -34,3 +34,15 @@ class HealthProgram(db.Model):
     
     clients = db.relationship('Client', secondary='client_programs', back_populates='programs')
 
+class Client(db.Model):
+    __tablename__ = 'clients'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    date_of_birth = db.Column(db.Date)
+    gender = db.Column(db.String(10))
+    contact_number = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    
+    programs = db.relationship('HealthProgram', secondary='client_programs', back_populates='clients')
