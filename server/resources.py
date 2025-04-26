@@ -237,15 +237,15 @@ class ClientResource(Resource):
                 'gender': client.gender,
                 'contact_number': client.contact_number,
                 'address': client.address,
-                'client_programs': []
+                'enrollments': []  # Changed from client_programs to enrollments
             }
             
             for cp in client_programs:
                 program = HealthProgram.query.get(cp.program_id)
                 if program:
-                    client_data['client_programs'].append({
+                    client_data['enrollments'].append({
                         'program_id': program.id,
-                        'program_name': program.name,
+                        'program_name': program.name,  # Make sure this matches frontend
                         'status': cp.status,
                         'enrollment_date': cp.enrollment_date.isoformat(),
                         'notes': cp.notes
