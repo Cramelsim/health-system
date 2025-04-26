@@ -6,6 +6,7 @@ flask-cors==5.0.1
 Flask-JWT-Extended==4.7.1
 Flask-RESTful==0.3.10
 Flask-SQLAlchemy==3.1.1
+pip install Flask-Migrate
 greenlet==3.2.1
 itsdangerous==2.2.0
 Jinja2==3.1.6

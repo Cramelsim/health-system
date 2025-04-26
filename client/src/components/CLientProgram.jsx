@@ -14,16 +14,31 @@ function ClientProfile() {
   useEffect(() => {
     const fetchClientData = async () => {
       try {
+        setLoading(true);
+        setError('');
+        
         const data = await getClientDetails(clientId);
+        
+        if (!data) {
+          throw new Error('Client data is empty');
+        }
+        
         setClient(data);
       } catch (err) {
-        setError('Failed to load client data');
-        console.error('Error fetching client:', err);
+        console.error('Fetch error details:', {
+          message: err.message,
+          status: err.response?.status,
+          clientId
+        });
+        
+        setError(err.message.includes('404') 
+          ? 'Client not found' 
+          : 'Failed to load client data');
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchClientData();
   }, [clientId]);
 
@@ -112,35 +127,30 @@ function ClientProfile() {
           </div>
         </div>
 
+        {/* Program display logic */}
         <div className="program-section">
-          <h4>Enrolled Program</h4>
-          {client.enrolled_program ? (
-            <div className="program-card">
-              <div className="program-header">
-                <h5>{client.enrolled_program.name}</h5>
-                <span className={`status-badge ${client.enrolled_program.status.toLowerCase()}`}>
-                  {client.enrolled_program.status}
-                </span>
-              </div>
-              <p className="program-description">
-                {client.enrolled_program.description || 'No description available'}
-              </p>
-              <div className="program-details">
-                <div className="detail-item">
-                  <span>Start Date:</span>
-                  <span>{new Date(client.enrolled_program.start_date).toLocaleDateString()}</span>
+          <h4>Enrolled Programs</h4>
+          {client.enrollments && client.enrollments.length > 0 ? (
+            client.enrollments.map(enrollment => (
+              <div key={enrollment.program_id} className="program-card">
+                <div className="program-header">
+                  <h5>{enrollment.program_name}</h5>
+                  <span className={`status-badge ${enrollment.status.toLowerCase()}`}>
+                    {enrollment.status}
+                  </span>
                 </div>
-                <div className="detail-item">
-                  <span>End Date:</span>
-                  <span>{client.enrolled_program.end_date ? 
-                    new Date(client.enrolled_program.end_date).toLocaleDateString() : 'Ongoing'}</span>
-                </div>
-                <div className="detail-item">
-                  <span>Assigned Doctor:</span>
-                  <span>{client.enrolled_program.assigned_doctor || 'Not assigned'}</span>
+                <div className="program-details">
+                  <div className="detail-item">
+                    <span>Enrollment Date:</span>
+                    <span>{new Date(enrollment.enrollment_date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span>Notes:</span>
+                    <span>{enrollment.notes || 'No notes'}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))
           ) : (
             <p className="no-program">This client is not currently enrolled in any program.</p>
           )}

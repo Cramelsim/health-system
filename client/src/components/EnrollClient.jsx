@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { enrollClient } from '../components/api'; 
+import { enrollClient } from '../components/api';
 
 function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
   const [formData, setFormData] = useState({
@@ -18,42 +18,38 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
       [name]: value
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-
-    console.log('Enrollment data being sent:', {
-      client_id: parseInt(formData.client_id),
-      program_id: parseInt(formData.program_id),
-      status: formData.status,
-      notes: formData.notes
-    });
     
     try {
-      // Validate required fields
       if (!formData.client_id || !formData.program_id) {
-        throw new Error('Client and Program are required');
+        throw new Error('Please select both client and program');
       }
-
-      // CORRECTED: Call the API function, not the component
+  
       const result = await enrollClient({
-        client_id: parseInt(formData.client_id),
-        program_id: parseInt(formData.program_id),
+        client_id: formData.client_id,
+        program_id: formData.program_id,
         status: formData.status,
-        notes: formData.notes
+        notes: formData.notes,
+        subject: formData.subject || 'General Enrollment' 
       });
       
-      onEnrollmentSuccess(result.enrollment);
+      onEnrollmentSuccess(result);
       setFormData({
         client_id: '',
         program_id: '',
         status: 'Active',
-        notes: ''
+        notes: '' ,
+        subject: 'General Enrollment' 
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.message.includes('422') 
+        ? 'Invalid data. Please check your selections.'
+        : err.message.includes('409')
+        ? 'This client is already enrolled in the selected program'
+        : err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -68,10 +64,11 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         <div className="form-group">
           <label>Client:</label>
           <select 
-            name="client_id" 
+            name="client_id"
             value={formData.client_id}
             onChange={handleChange}
             required
+            disabled={isSubmitting}
           >
             <option value="">Select Client</option>
             {clients.map(client => (
@@ -85,10 +82,11 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         <div className="form-group">
           <label>Program:</label>
           <select 
-            name="program_id" 
+            name="program_id"
             value={formData.program_id}
             onChange={handleChange}
             required
+            disabled={isSubmitting}
           >
             <option value="">Select Program</option>
             {programs.map(program => (
@@ -102,9 +100,10 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         <div className="form-group">
           <label>Status:</label>
           <select 
-            name="status" 
+            name="status"
             value={formData.status}
             onChange={handleChange}
+            disabled={isSubmitting}
           >
             <option value="Active">Active</option>
             <option value="Completed">Completed</option>
@@ -115,14 +114,29 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         <div className="form-group">
           <label>Notes:</label>
           <textarea 
-            name="notes" 
+            name="notes"
             value={formData.notes}
             onChange={handleChange}
             rows="3"
+            disabled={isSubmitting}
           />
         </div>
+
+        <div className="form-group">
+    <label>Subject:</label>
+    <input
+      name="subject"
+      value={formData.subject}
+      onChange={handleChange}
+      disabled={isSubmitting}
+    />
+  </div>
         
-        <button type="submit" disabled={isSubmitting}>
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className={isSubmitting ? 'submitting' : ''}
+        >
           {isSubmitting ? 'Enrolling...' : 'Enroll Client'}
         </button>
       </form>

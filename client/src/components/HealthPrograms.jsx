@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext';
-import { getPrograms, createProgram} from '../components/api';
-import ClientEnrollmentView from '../components/EnrollmentView';
+import { getHealthPrograms } from '../components/api';
+import CreateProgramForm from './CreateProgramForm';
 
 function HealthPrograms() {
   const [programs, setPrograms] = useState([]);
-  const [newProgram, setNewProgram] = useState({
-    name: '',
-    description: ''
-  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const { user } = useAuth();
+  const [error, setError] = useState(null);
 
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      setError('');
-      const data = await getPrograms();
-      setPrograms(data);
+      const data = await getHealthPrograms();
+      if (Array.isArray(data)) {
+        setPrograms(data);
+      } else {
+        setPrograms([]);
+        console.error('Expected array but got:', data);
+      }
     } catch (err) {
-      setError(err.message || 'Failed to fetch programs');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -32,127 +28,30 @@ function HealthPrograms() {
     fetchPrograms();
   }, []);
 
-  const handleInputChange = (e) => {
-    setNewProgram({
-      ...newProgram,
-      [e.target.name]: e.target.value
-    });
+  const handleProgramCreated = (newProgram) => {
+    setPrograms(prev => [...prev, newProgram]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    
-    // Client-side validation
-    if (!newProgram.name.trim()) {
-        setError('Program name is required');
-        return;
-    }
-
-    try {
-        const response = await createProgram({
-            name: newProgram.name.trim(),
-            description: newProgram.description.trim()
-        });
-        
-        setSuccess(`Program "${response.name}" created successfully!`);
-        setNewProgram({ name: '', description: '' });
-        
-        // Refresh program list
-        const updatedPrograms = await getPrograms();
-        setPrograms(updatedPrograms);
-    } catch (err) {
-        // Handle different error types
-        if (err.message.includes('409')) {
-            setError('A program with this name already exists');
-        } else {
-            setError(err.message || 'Failed to create program');
-        }
-    }
-  };
-
-  if (loading) return <div className="loading">Loading programs...</div>;
+  if (loading) return <div>Loading programs...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="programs-container">
-      <div className="programs-header">
-        <h2>Health Programs</h2>
-      </div>
+      <h2>Health Programs</h2>
       
-      <div className="programs-content">
-        <div className="programs-list">
-          <h3>Available Programs</h3>
-          {!user && (
-            <div className="login-prompt">
-              <p>Login to view program details and enrollment information.</p>
-              <Link to="/login" className="btn-primary">
-                Login
-              </Link>
+      {/* Add the create form */}
+      <CreateProgramForm onProgramCreated={handleProgramCreated} />
+      
+      <div className="programs-list">
+        {programs.length > 0 ? (
+          programs.map(program => (
+            <div key={program.id} className="program-item">
+              <h3>{program.name}</h3>
+              <p>{program.description}</p>
             </div>
-          )}
-          {programs.length === 0 ? (
-            <p>No programs available</p>
-          ) : (
-            <ul>
-              {programs.map(program => (
-                <li key={program.id}>
-                  <div className="program-item">
-                    <h4>{program.name}</h4>
-                    {user && <p>{program.description}</p>}
-                    {user && (
-                      <Link to={`/clients?program=${program.id}`} className="btn-view">
-                        View Enrolled Clients
-                      </Link>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        
-        {user && (
-          <>
-            <div className="create-program">
-              <h3>Create New Program</h3>
-              {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">{success}</div>}
-              
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>Program Name*:</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newProgram.name}
-                    onChange={handleInputChange}
-                    required
-                    minLength="3"
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Description:</label>
-                  <textarea
-                    name="description"
-                    value={newProgram.description}
-                    onChange={handleInputChange}
-                    rows={3}
-                  />
-                </div>
-                
-                <button type="submit" className="btn-primary">
-                  Create Program
-                </button>
-              </form>
-            </div>
-
-            <div className="enrollment-section">
-              <h3>Client Enrollment</h3>
-              <ClientEnrollmentView />
-            </div>
-          </>
+          ))
+        ) : (
+          <p>No programs available</p>
         )}
       </div>
     </div>

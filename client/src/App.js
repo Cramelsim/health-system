@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext';
 import Login from './components/Login';
 import Clients from './components/Clients';
-import ClientProfile from './components/ClientProfile';
+import ClientProgram from './components/CLientProgram';
 import RegisterClient from './components/RegisterClient';
 import HealthPrograms from './components/HealthPrograms';
 import ProtectedRoute from './components/ProtectedRoutes';
@@ -24,7 +24,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/clients/register" element={<RegisterClient />} />
-              <Route path="/clients/:clientId" element={<ClientProfile />} />
+              <Route path="/clients/:clientId" element={<ClientProgram />} />
               <Route path="/programs" element={<HealthPrograms />} />
               <Route path="/register/doctor" element={<DoctorRegister />} />
                  {/* Public routes */}
@@ -39,7 +39,7 @@ function App() {
           } />
           <Route path="/clients/:id" element={
             <ProtectedRoute>
-              <ClientProfile />
+              <ClientProgram />
             </ProtectedRoute>
           } />
             </Routes>

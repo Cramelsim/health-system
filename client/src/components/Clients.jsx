@@ -9,6 +9,7 @@ function Clients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false); // Now we actually use it properly
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -19,7 +20,7 @@ function Clients() {
       const data = await getClients();
       setClients(data);
     } catch (err) {
-      if (err.message.includes('401')) {
+      if (err.message.includes('401') || err.message.includes('Authentication')) {
         logout();
         navigate('/login');
       } else {
@@ -36,42 +37,45 @@ function Clients() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm.trim()) {
-        searchClients(searchTerm)
-          .then(data => setClients(data))
-          .catch(err => setError(err.message || 'Search failed'));
-      } else {
+      if (!searchTerm.trim()) {
         fetchClients();
+        setIsSearching(false); // <-- clear searching state
+        return;
       }
+
+      setLoading(true);
+      setIsSearching(true); // <-- set searching state to true
+      searchClients(searchTerm)
+        .then(data => {
+          setClients(data.results || []);
+          setError(data.results?.length === 0 ? 'No matching clients found' : '');
+        })
+        .catch(err => {
+          console.error('Search error:', {
+            message: err.message,
+            stack: err.stack
+          });
+
+          if (err.message.includes('token') || err.message.includes('401')) {
+            logout();
+            navigate('/login');
+          } else {
+            setError(err.message.includes('failed') ? 'Search unavailable. Showing all clients.' : err.message);
+            fetchClients(); // Fallback to all clients
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+          setIsSearching(false); // <-- stop searching after done
+        });
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, fetchClients]);
+  }, [searchTerm, fetchClients, logout, navigate]); // <-- added missing dependencies
 
-  if (loading) return <div className="loading">Loading clients...</div>;
+  if (loading && !isSearching) return <div className="loading">Loading clients...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchTerm.trim()) {
-        searchClients(searchTerm)
-          .then(data => {
-            setClients(data);
-            setError('');
-          })
-          .catch(err => {
-            setError(err.message);
-            // Fallback to showing all clients if search fails
-            fetchClients(); 
-          });
-      } else {
-        fetchClients();
-      }
-    }, 500);
-  
-    return () => clearTimeout(timer);
-  }, [searchTerm, fetchClients]);
-  
   return (
     <div className="clients-container">
       <div className="clients-header">
@@ -82,19 +86,23 @@ function Clients() {
           </Link>
         )}
       </div>
-      
+
       <div className="search-bar">
         <input
           type="text"
           placeholder="Search clients by name or contact..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={loading}
         />
+        {loading && isSearching && <span className="search-loading">Searching...</span>}
       </div>
 
       <div className="clients-list">
         {clients.length === 0 ? (
-          <div className="no-results">No clients found</div>
+          <div className="no-results">
+            {isSearching ? 'No matching clients found' : 'No clients available'}
+          </div>
         ) : (
           <table>
             <thead>
@@ -118,6 +126,7 @@ function Clients() {
                       <button 
                         onClick={() => navigate(`/clients/${client.id}`)}
                         className="btn-view"
+                        disabled={loading}
                       >
                         View Profile
                       </button>
