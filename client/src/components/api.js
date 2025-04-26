@@ -4,7 +4,6 @@ export const setAccessToken = (token) => {
     localStorage.setItem('accessToken', token);
 };
 
-
 const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem('accessToken');
   
@@ -29,10 +28,9 @@ const fetchWithAuth = async (url, options = {}) => {
   };
   
   try {
-    const response = await fetch(`http://localhost:5000${url}`, mergedOptions);
+    const response = await fetch(`${API_URL}${url}`, mergedOptions);
     
     if (response.status === 401) {
-      
       localStorage.removeItem('accessToken');
       window.location.href = '/login';
       throw new Error('Unauthorized access');
@@ -78,10 +76,9 @@ export const getClients = async () => {
       console.error('Error fetching clients:', error);
       throw error;
     }
-  };
-  
+};
 
-  export const getClientDetails = async (clientId) => {
+export const getClientDetails = async (clientId) => {
     try {
         const id = Number(clientId);
         if (isNaN(id)) {
@@ -90,16 +87,11 @@ export const getClients = async () => {
         
         const response = await fetchWithAuth(`/clients/${id}`);
         
-        if (!response) {
-            throw new Error('No client data received');
+        if (!response.ok) {
+            throw new Error('Failed to fetch client');
         }
 
-        return {
-            ...response,
-            enrollments: response.enrollments || [], // Ensure enrollments exists
-            first_name: response.first_name || '',
-            last_name: response.last_name || ''
-        };
+        return await response.json();
     } catch (error) {
         console.error('Error fetching client:', {
             message: error.message,
@@ -109,7 +101,6 @@ export const getClients = async () => {
         throw error;
     }
 };
-
 
 export const searchClients = async (searchTerm) => {
   if (!searchTerm.trim()) {
@@ -131,6 +122,7 @@ export const searchClients = async (searchTerm) => {
     return { results: [] };  
   }
 };
+
 export const createClient = async (clientData) => {
     return fetchWithAuth('/clients', {
         method: 'POST',
@@ -138,8 +130,33 @@ export const createClient = async (clientData) => {
     });
 };
 
-// Program Operations
+export const enrollClient = async (enrollmentData) => {
+  try {
+    const response = await fetchWithAuth('/enrollments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: Number(enrollmentData.client_id),
+        program_id: Number(enrollmentData.program_id),
+        status: enrollmentData.status || 'Active',
+        notes: enrollmentData.notes || ''
+      })
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Enrollment failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Enrollment error:', error);
+    throw error;
+  }
+};
+// Program Operations
 export const getHealthPrograms = async () => {
   try {
     const response = await fetchWithAuth('/programs', {
@@ -186,44 +203,6 @@ export const createProgram = async (programData) => {
     return result;
   } catch (error) {
     console.error('Create program error:', error);
-    throw error;
-  }
-};
-   
-
-
-export const enrollClient = async (enrollmentData) => {
-  try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      throw new Error('Not authenticated - please login');
-    }
-
-  
-    const payload = {
-      client_id: Number(enrollmentData.client_id),
-      program_id: Number(enrollmentData.program_id),
-      status: enrollmentData.status || 'Active',
-      notes: enrollmentData.notes || null
-    };
-
-    const response = await fetch(`${API_URL}/enrollments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.msg || 'Enrollment failed');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Enrollment failed:', error.message);
     throw error;
   }
 };

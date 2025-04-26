@@ -39,7 +39,7 @@ function HealthPrograms() {
     <div className="programs-container">
       <h2>Health Programs</h2>
       
-      {/* Add the create form */}
+      
       <CreateProgramForm onProgramCreated={handleProgramCreated} />
       
       <div className="programs-list">

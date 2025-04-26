@@ -9,7 +9,7 @@ function Clients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isSearching, setIsSearching] = useState(false); // Now we actually use it properly
+  const [isSearching, setIsSearching] = useState(false); 
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -39,12 +39,12 @@ function Clients() {
     const timer = setTimeout(() => {
       if (!searchTerm.trim()) {
         fetchClients();
-        setIsSearching(false); // <-- clear searching state
+        setIsSearching(false); 
         return;
       }
 
       setLoading(true);
-      setIsSearching(true); // <-- set searching state to true
+      setIsSearching(true); 
       searchClients(searchTerm)
         .then(data => {
           setClients(data.results || []);
@@ -61,17 +61,17 @@ function Clients() {
             navigate('/login');
           } else {
             setError(err.message.includes('failed') ? 'Search unavailable. Showing all clients.' : err.message);
-            fetchClients(); // Fallback to all clients
+            fetchClients(); 
           }
         })
         .finally(() => {
           setLoading(false);
-          setIsSearching(false); // <-- stop searching after done
+          setIsSearching(false); 
         });
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, fetchClients, logout, navigate]); // <-- added missing dependencies
+  }, [searchTerm, fetchClients, logout, navigate]); 
 
   if (loading && !isSearching) return <div className="loading">Loading clients...</div>;
   if (error) return <div className="error-message">{error}</div>;

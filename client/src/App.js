@@ -10,7 +10,6 @@ import ProtectedRoute from './components/ProtectedRoutes';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import DoctorRegister from './components/DoctorRegister';
-import EditClient from './EditClient'; 
 import './App.css';
 
 function App() {
@@ -28,7 +27,6 @@ function App() {
               <Route path="/clients/:clientId" element={<ClientProgram />} />
               <Route path="/programs" element={<HealthPrograms />} />
               <Route path="/register/doctor" element={<DoctorRegister />} />
-              <Route path="/clients/:clientId/edit" element={<EditClient />} />
                  {/* Public routes */}
           <Route path="/clients" element={<Clients showPublicView={true} />} />
           <Route path="/programs" element={<HealthPrograms showPublicView={true} />} />

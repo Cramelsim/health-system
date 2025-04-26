@@ -99,10 +99,9 @@ function ClientProfile() {
       <div className="profile-card">
         <div className="profile-section">
           <div className="profile-image">
-         
-      < div className="avatar">
-         {(client.first_name?.charAt(0) || '')}{(client.last_name?.charAt(0) || '')}
-         </div>
+            <div className="avatar">
+              {(client.first_name?.charAt(0) || '')}{(client.last_name?.charAt(0) || '')}
+            </div>
           </div>
 
           <div className="profile-info">
@@ -155,32 +154,6 @@ function ClientProfile() {
             <p className="no-program">This client is not currently enrolled in any program.</p>
           )}
         </div>
-
-        {user && (
-          <div className="profile-actions">
-            <button 
-              onClick={() => navigate(`/clients/${clientId}/edit`)}
-              className="btn-edit"
-            >
-              Edit Profile
-            </button>
-            {client.enrolled_program ? (
-              <button 
-                onClick={() => navigate(`/programs/${client.enrolled_program.id}`)}
-                className="btn-view-program"
-              >
-                View Program Details
-              </button>
-            ) : (
-              <button 
-                onClick={() => navigate(`/clients/${clientId}/enroll`)}
-                className="btn-enroll"
-              >
-                Enroll in Program
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
