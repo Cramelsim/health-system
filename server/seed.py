@@ -1,10 +1,7 @@
 from app import app
 from models import db, User, HealthProgram, Client, ClientProgram
-from datetime import datetime, date
-
-def generate_enrollment_subject(client, program):
-    """Generate a meaningful subject for enrollments"""
-    return f"{client.first_name} {client.last_name} - {program.name} Program"
+from datetime import datetime, date, timezone
+from sqlalchemy import select
 
 def seed_database():
     with app.app_context():
@@ -14,7 +11,6 @@ def seed_database():
         db.create_all()
 
         print("Seeding users...")
-        # Admin user
         admin = User(
             username='admin',
             first_name='Admin',
@@ -25,7 +21,6 @@ def seed_database():
         )
         admin.set_password('admin123')
         
-        # Doctor users
         doctors = [
             User(
                 username='dr_smith',
@@ -60,7 +55,7 @@ def seed_database():
         
         db.session.add(admin)
         db.session.add_all(doctors)
-        db.session.commit()  # Commit early to get IDs
+        db.session.commit()
 
         print("Seeding health programs...")
         programs = [
@@ -104,64 +99,44 @@ def seed_database():
         db.session.commit()
 
         print("Creating enrollments (ClientProgram records)...")
-        # Get all seeded data for reference
-        all_clients = Client.query.all()
-        all_programs = HealthProgram.query.all()
-        all_users = User.query.all()
+        all_clients = db.session.scalars(select(Client)).all()
+        all_programs = db.session.scalars(select(HealthProgram)).all()
+        all_users = db.session.scalars(select(User)).all()
 
         enrollments = [
             ClientProgram(
                 client_id=all_clients[0].id,
                 program_id=all_programs[0].id,
                 status='Active',
-                subject=generate_enrollment_subject(all_clients[0], all_programs[0]),
-                enrollment_date=datetime.utcnow(),
-                created_by=all_users[0].id  # admin user
+                enrollment_date=datetime.now(timezone.utc),
+                created_by=all_users[0].id
             ),
             ClientProgram(
                 client_id=all_clients[0].id,
                 program_id=all_programs[2].id,
                 status='Active',
-                subject=generate_enrollment_subject(all_clients[0], all_programs[2]),
-                enrollment_date=datetime.utcnow(),
-                created_by=all_users[1].id  # dr_smith
+                enrollment_date=datetime.now(timezone.utc),
+                created_by=all_users[1].id
             ),
             ClientProgram(
                 client_id=all_clients[1].id,
                 program_id=all_programs[1].id,
                 status='Active',
-                subject=generate_enrollment_subject(all_clients[1], all_programs[1]),
-                enrollment_date=datetime.utcnow(),
-                created_by=all_users[2].id  # dr_jones
+                enrollment_date=datetime.now(timezone.utc),
+                created_by=all_users[2].id
             ),
             ClientProgram(
                 client_id=all_clients[2].id,
                 program_id=all_programs[3].id,
                 status='Pending',
-                subject=generate_enrollment_subject(all_clients[2], all_programs[3]),
-                enrollment_date=datetime.utcnow(),
-                created_by=all_users[0].id  # admin
+                enrollment_date=datetime.now(timezone.utc),
+                created_by=all_users[0].id
             )
         ]
         db.session.add_all(enrollments)
-
         db.session.commit()
-        print("Database seeded successfully!")
 
-        # Print verification data
-        print("\nVerification Data:")
-        print(f"Users created: {User.query.count()}")
-        print(f"Programs created: {HealthProgram.query.count()}")
-        print(f"Clients created: {Client.query.count()}")
-        print(f"Enrollments created: {ClientProgram.query.count()}")
-        print("\nSample Users:")
-        for user in User.query.limit(3).all():
-            print(f"- {user.username}: {user.first_name} {user.last_name} ({user.role})")
-        print("\nSample Enrollments:")
-        for enrollment in ClientProgram.query.limit(2).all():
-            client = Client.query.get(enrollment.client_id)
-            program = HealthProgram.query.get(enrollment.program_id)
-            print(f"- {client.first_name} in {program.name}: {enrollment.subject}")
+        print("Database seeded successfully!")
 
 if __name__ == '__main__':
     seed_database()

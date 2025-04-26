@@ -2,7 +2,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime, timezone  
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -73,9 +73,10 @@ class ClientProgram(db.Model):
     program_id = db.Column(db.Integer, db.ForeignKey('health_programs.id'), nullable=False)
     status = db.Column(db.String(20), default='Active')
     notes = db.Column(db.Text)
-    enrollment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    enrollment_date = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
-    subject = db.Column(db.String(255), nullable=False)
+    
+    # Relationships
     client = db.relationship('Client', back_populates='client_programs')
     program = db.relationship('HealthProgram', back_populates='client_programs')
     created_by_user = db.relationship('User')
@@ -93,5 +94,5 @@ class ClientProgram(db.Model):
             'notes': self.notes,
             'enrollment_date': self.enrollment_date.isoformat() if self.enrollment_date else None,
             'created_by': self.created_by,
-            'subject': self.subject,
+            
         }

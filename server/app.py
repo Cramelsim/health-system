@@ -31,16 +31,15 @@ db.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
 
-# Create the API instance ONCE
+
 api = Api(app)
 
 
 
-# Create database tables (using app context)
 with app.app_context():
     db.create_all()
     
-    # Create admin user if not exists
+    
     if not User.query.filter_by(username='admin').first():
         admin = User(username='admin', role='admin')
         admin.set_password('admin123')

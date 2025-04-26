@@ -307,7 +307,6 @@ class EnrollmentResource(Resource):
     parser.add_argument('program_id', type=int, required=True, help='Program ID is required and must be an integer')
     parser.add_argument('status', type=str)
     parser.add_argument('notes', type=str)
-    parser.add_argument('subject', type=str, required=True, help='Subject is required')  # Added subject field
 
     @jwt_required()
     def post(self):
@@ -342,13 +341,12 @@ class EnrollmentResource(Resource):
                     'enrollment_id': existing.id
                 }, 409
                 
-            # Create new enrollment with subject
+            
             enrollment = ClientProgram(
                 client_id=data['client_id'],
                 program_id=data['program_id'],
                 status=data.get('status', 'Active'),
                 notes=data.get('notes'),
-                subject=data['subject'], 
                 created_by=user_id
             )
             
