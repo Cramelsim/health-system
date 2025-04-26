@@ -7,6 +7,7 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
     program_id: '',
     status: 'Active',
     notes: ''
+    
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +34,6 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         program_id: formData.program_id,
         status: formData.status,
         notes: formData.notes,
-        subject: formData.subject || 'General Enrollment' 
       });
       
       onEnrollmentSuccess(result);
@@ -42,7 +42,6 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
         program_id: '',
         status: 'Active',
         notes: '' ,
-        subject: 'General Enrollment' 
       });
     } catch (err) {
       setError(err.message.includes('422') 
@@ -122,15 +121,7 @@ function EnrollClient({ clients, programs, onEnrollmentSuccess }) {
           />
         </div>
 
-        <div className="form-group">
-    <label>Subject:</label>
-    <input
-      name="subject"
-      value={formData.subject}
-      onChange={handleChange}
-      disabled={isSubmitting}
-    />
-  </div>
+      
         
         <button 
           type="submit" 

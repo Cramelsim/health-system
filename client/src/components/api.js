@@ -32,7 +32,7 @@ const fetchWithAuth = async (url, options = {}) => {
     const response = await fetch(`http://localhost:5000${url}`, mergedOptions);
     
     if (response.status === 401) {
-      // Handle unauthorized - perhaps redirect to login
+      
       localStorage.removeItem('accessToken');
       window.location.href = '/login';
       throw new Error('Unauthorized access');
@@ -83,7 +83,6 @@ export const getClients = async () => {
 
   export const getClientDetails = async (clientId) => {
     try {
-        // Ensure clientId is a number
         const id = Number(clientId);
         if (isNaN(id)) {
             throw new Error('Invalid client ID');
@@ -91,12 +90,15 @@ export const getClients = async () => {
         
         const response = await fetchWithAuth(`/clients/${id}`);
         
-        // Transform the data if needed
+        if (!response) {
+            throw new Error('No client data received');
+        }
+
         return {
             ...response,
-            enrolled_program: response.enrollments && response.enrollments.length > 0 
-                ? response.enrollments[0]
-                : null
+            enrollments: response.enrollments || [], // Ensure enrollments exists
+            first_name: response.first_name || '',
+            last_name: response.last_name || ''
         };
     } catch (error) {
         console.error('Error fetching client:', {
@@ -120,13 +122,13 @@ export const searchClients = async (searchTerm) => {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Search failed:', errorData);
-      return { results: [] };  // Fallback to empty results
+      return { results: [] };  
     }
     
     return await response.json();
   } catch (error) {
     console.error('Search error:', error);
-    return { results: [] };  // Fallback to empty results
+    return { results: [] };  
   }
 };
 export const createClient = async (clientData) => {
@@ -154,7 +156,7 @@ export const getHealthPrograms = async () => {
       throw new Error(data.message || 'Failed to fetch programs');
     }
 
-    return data.programs; // Return just the programs array
+    return data.programs; 
   } catch (error) {
     console.error('Error fetching health programs:', error);
     throw error;
@@ -181,12 +183,13 @@ export const createProgram = async (programData) => {
       throw new Error(result.message || 'Failed to create program');
     }
 
-    return result; // Returns the full success response
+    return result;
   } catch (error) {
     console.error('Create program error:', error);
     throw error;
   }
 };
+   
 
 
 export const enrollClient = async (enrollmentData) => {
@@ -196,17 +199,12 @@ export const enrollClient = async (enrollmentData) => {
       throw new Error('Not authenticated - please login');
     }
 
-    // Validate required fields including subject
-    if (!enrollmentData.client_id || !enrollmentData.program_id || !enrollmentData.subject) {
-      throw new Error('Client ID, Program ID, and Subject are required');
-    }
-
+  
     const payload = {
       client_id: Number(enrollmentData.client_id),
       program_id: Number(enrollmentData.program_id),
       status: enrollmentData.status || 'Active',
-      notes: enrollmentData.notes || null,
-      subject: String(enrollmentData.subject) // Ensure subject is string
+      notes: enrollmentData.notes || null
     };
 
     const response = await fetch(`${API_URL}/enrollments`, {

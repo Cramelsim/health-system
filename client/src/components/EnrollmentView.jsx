@@ -1,4 +1,3 @@
-// ClientEnrollmentView.jsx
 import React, { useState, useEffect } from 'react';
 import { getClients, getHealthPrograms } from '../components/api';
 import EnrollClient from './EnrollClient';

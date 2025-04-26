@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/AuthContext';
-import { getClientDetails } from '../components/api';
+import { useAuth } from './AuthContext';
+import { getClientDetails } from './api';
 
 function ClientProfile() {
   const { clientId } = useParams();
@@ -99,9 +99,10 @@ function ClientProfile() {
       <div className="profile-card">
         <div className="profile-section">
           <div className="profile-image">
-            <div className="avatar">
-              {client.first_name.charAt(0)}{client.last_name.charAt(0)}
-            </div>
+         
+      < div className="avatar">
+         {(client.first_name?.charAt(0) || '')}{(client.last_name?.charAt(0) || '')}
+         </div>
           </div>
 
           <div className="profile-info">
@@ -127,7 +128,6 @@ function ClientProfile() {
           </div>
         </div>
 
-        {/* Program display logic */}
         <div className="program-section">
           <h4>Enrolled Programs</h4>
           {client.enrollments && client.enrollments.length > 0 ? (
