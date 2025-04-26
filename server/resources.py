@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, get_jwt, create_access_token
 from models import db, User, HealthProgram, Client, ClientProgram
 import re
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields, ValidationError, EXCLUDE 
 from marshmallow.validate import Length
 from sqlalchemy import func
 from datetime import datetime
@@ -170,12 +170,17 @@ class ProgramListResource(Resource):
             }, 500
         
 class ClientSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE 
+    
+    id = fields.Int(dump_only=True)
     first_name = fields.Str(required=True)
     last_name = fields.Str(required=True)
-    date_of_birth = fields.Date()
-    gender = fields.Str()
-    contact_number = fields.Str()
-    address = fields.Str()
+    date_of_birth = fields.Date(allow_none=True)
+    gender = fields.Str(allow_none=True)
+    contact_number = fields.Str(allow_none=True)
+    address = fields.Str(allow_none=True)
+
 
 def admin_required(fn):
     @wraps(fn)
@@ -222,6 +227,8 @@ class ClientListResource(Resource):
             db.session.rollback()
             return {'error': str(e)}, 500
 
+
+
 class ClientResource(Resource):
     @jwt_required()
     def get(self, client_id):
@@ -257,7 +264,7 @@ class ClientResource(Resource):
                 'message': 'Failed to fetch client details',
                 'error': str(e)
             }, 500
-
+        
 class ClientSearchResource(Resource):
     @jwt_required()
     def get(self):

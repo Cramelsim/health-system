@@ -79,27 +79,32 @@ export const getClients = async () => {
 };
 
 export const getClientDetails = async (clientId) => {
-    try {
-        const id = Number(clientId);
-        if (isNaN(id)) {
-            throw new Error('Invalid client ID');
-        }
-        
-        const response = await fetchWithAuth(`/clients/${id}`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch client');
-        }
+  try {
+      const id = Number(clientId);
+      if (isNaN(id)) {
+          throw new Error('Invalid client ID');
+      }
+      
+      const response = await fetchWithAuth(`/clients/${id}`);
+      
+      if (!response) {
+          throw new Error('No client data received');
+      }
 
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching client:', {
-            message: error.message,
-            clientId,
-            stack: error.stack
-        });
-        throw error;
-    }
+      return {
+          ...response,
+          enrollments: response.enrollments || [], // Ensure enrollments exists
+          first_name: response.first_name || '',
+          last_name: response.last_name || ''
+      };
+  } catch (error) {
+      console.error('Error fetching client:', {
+          message: error.message,
+          clientId,
+          stack: error.stack
+      });
+      throw error;
+  }
 };
 
 export const searchClients = async (searchTerm) => {
